@@ -14,18 +14,9 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       drawer: NavigationDrawerWidget(),
       appBar: AppBar(
-        title: Text("Admin"),
-
-        actions: [
-          IconButton(
-              onPressed: () => 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) =>  ListBook()),
-                  ),
-              icon: Icon(Icons.list),
-              padding: EdgeInsets.fromLTRB(0, 0, 40, 0)),
-        ],
+        title: Text("Home"),
+        centerTitle: true,
+        backgroundColor: Color.fromARGB(255, 81, 228, 93),
       ),
     );
   }

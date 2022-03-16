@@ -12,10 +12,12 @@ class ListBook extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-            backgroundColor: Colors.white,
+            backgroundColor: Color.fromARGB(255, 81, 228, 93),
+            centerTitle: true,
+            title:Text("List book"),
             leading: IconButton(
               icon: Icon(Icons.arrow_back),
-              color: Colors.black,
+              color: Colors.white,
               onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => HomeScreen()),
