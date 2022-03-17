@@ -22,15 +22,15 @@ class NavigationDrawerWidget extends StatelessWidget {
               height: 48,
             ),
             listTitleComponent(
-              text: "List Book", 
-              icon: Icons.book, 
-              context: context, a: ListBook()
-            ),
+                text: "List Book",
+                icon: Icons.book,
+                context: context,
+                a: ListBook()),
             listTitleComponent(
-              text: "Create book", 
-              icon: Icons.add, 
-              context: context, a: CreateBook()
-            ),
+                text: "Create book",
+                icon: Icons.add,
+                context: context,
+                a: CreateBook()),
           ],
         ),
       ),
@@ -42,7 +42,7 @@ Widget listTitleComponent({
   required String text,
   required IconData icon,
   required BuildContext context,
-  required StatelessWidget a,
+  required StatefulWidget a,
 }) {
   final color = Colors.white;
   final hovercolor = Colors.white70;

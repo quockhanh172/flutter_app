@@ -3,28 +3,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_book/screens/homescreen.dart';
 
-class ListBook extends StatelessWidget {
+class ListBook extends StatefulWidget {
   static String routerName = "/listbook";
 
   const ListBook({Key? key}) : super(key: key);
 
+  @override
+  State<ListBook> createState() => _ListBookState();
+}
+
+class _ListBookState extends State<ListBook> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
             backgroundColor: Color.fromARGB(255, 81, 228, 93),
             centerTitle: true,
-            title:Text("List book"),
+            title: Text("List book"),
             leading: IconButton(
               icon: Icon(Icons.arrow_back),
               color: Colors.white,
               onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
               ),
-            )
-        )
-      );
+            )));
   }
 }
-

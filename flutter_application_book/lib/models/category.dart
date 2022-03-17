@@ -1,43 +1,44 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter_application_book/models/book.dart';
-import 'package:http/http.dart' as http;
 
-class Category{
-  Category({this.id,
-           this.nameCategory,
-           this.books
-           });
+class Category {
+  Category({required this.id, required this.nameCategory, required this.books});
 
-  int ?id;
-  String ?nameCategory;
-  late List<Book> ?books;
+  int id;
+  String nameCategory;
+  List<Book> books;
 
-  Category.fromJson(Map<String,dynamic> json){
-    id=json["id"];
-    nameCategory= json["name"];
-    books= json["ebooks"];
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      id: json["id"],
+      nameCategory: json["nameCategory"],
+      books: json["ebooks"],
+    );
   }
 
-  Map<String,dynamic> toJson(){
-    final Map<String,dynamic> data = new Map<String,dynamic>();
-    data["id"]= this.id;
-    data["name"]=this.nameCategory;
-    data["ebooks"]= this.books;
-    return data;
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "nameCategory": nameCategory,
+      "ebooks": books,
+    };
+  }
+
+  @override
+  String toString() {
+    return 'Category{id:$id, nameCategory:$nameCategory,ebooks:$books}';
   }
 }
 
-Future<List<Category>> fetchAndSetCategory() async{
-   Uri url = Uri.parse('http://localhost:8080/category/list');
-   final response= await http.get(url);
-   var list = json.decode(response.body) as List<dynamic>;
-   List<Category> categories = list.map((model) => Category.fromJson(model)).toList();
-   if(response.statusCode==200){
-      return categories;
-   }
-   else{
-     return throw Exception("not found");
-   }
+List<Category> categoryFromJson(String strJson) {
+  final str = json.decode(strJson);
+  return List<Category>.from(str.map((item) {
+    return Category.fromJson(item);
+  }));
 }
 
+String CategoryToJson(Category data) {
+  final dyn = data.toJson();
+  return json.encode(dyn);
+}
