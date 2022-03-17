@@ -1,4 +1,4 @@
-// ignore_for_file: camel_case_types, prefer_const_constructors, prefer_final_fields, unused_field, avoid_types_as_parameter_names
+// ignore_for_file: camel_case_types, prefer_const_constructors, prefer_final_fields, unused_field, avoid_types_as_parameter_names, unused_element
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_book/models/category.dart';
@@ -42,12 +42,12 @@ class _CreateBookState extends State<CreateBook> {
     futureCategories = getCategories();
   }
 
-  Widget _category() {
+  Widget _category(List<Category> cates) {
     return DropdownButton<String>(
-      items: <String>['A', 'B', 'C', 'D'].map((String value) {
+      items: cates.map((item) {
         return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
+          value: item.id.toString(),
+          child: Text(item.nameCategory),
         );
       }).toList(),
       onChanged: (_) {},
@@ -76,14 +76,7 @@ class _CreateBookState extends State<CreateBook> {
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 List<Category>? categories = snapshot.data;
-                return Column(
-                    children: categories!
-                        .map((Category) => Column(
-                              children: <Widget>[
-                                Text(Category.books.toString()),
-                              ],
-                            ))
-                        .toList());
+                return _category(categories!);
               } else {
                 return Center(child: CircularProgressIndicator());
               }

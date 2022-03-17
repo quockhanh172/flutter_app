@@ -15,6 +15,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -56,6 +57,16 @@ public class Ebook {
 		}
 		else{
 			return "";
+		}
+	}
+	
+	@JsonProperty("idCategory")
+	public int getCategoryId() {
+		if(this.category.getNameCategory()!="") {
+			return this.category.getId();
+		}
+		else{
+			return 0;
 		}
 	}
 }

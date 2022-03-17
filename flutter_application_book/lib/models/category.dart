@@ -1,19 +1,15 @@
 import 'dart:convert';
 
-import 'package:flutter_application_book/models/book.dart';
-
 class Category {
-  Category({required this.id, required this.nameCategory, required this.books});
+  Category({required this.id, required this.nameCategory});
 
   int id;
   String nameCategory;
-  List<Book> books;
 
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
       id: json["id"],
       nameCategory: json["nameCategory"],
-      books: json["ebooks"],
     );
   }
 
@@ -21,13 +17,12 @@ class Category {
     return {
       "id": id,
       "nameCategory": nameCategory,
-      "ebooks": books,
     };
   }
 
   @override
   String toString() {
-    return 'Category{id:$id, nameCategory:$nameCategory,ebooks:$books}';
+    return 'Category{id:$id, nameCategory:$nameCategory}';
   }
 }
 
@@ -38,7 +33,7 @@ List<Category> categoryFromJson(String strJson) {
   }));
 }
 
-String CategoryToJson(Category data) {
+String categoryToJson(Category data) {
   final dyn = data.toJson();
   return json.encode(dyn);
 }
