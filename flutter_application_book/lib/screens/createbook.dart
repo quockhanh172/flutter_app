@@ -15,27 +15,8 @@ class CreateBook extends StatefulWidget {
 }
 
 class _CreateBookState extends State<CreateBook> {
-  Widget? _buildTitle() {
-    return null;
-  }
-
-  Widget? _description() {
-    return null;
-  }
-
-  Widget? _date() {
-    return null;
-  }
-
-  Widget? _author() {
-    return null;
-  }
-
-  Widget? _image() {
-    return null;
-  }
-
-  late Future<List<Category>> futureCategories;
+  Future<List<Category>>? futureCategories;
+  String? selectedName;
   @override
   void initState() {
     super.initState();
@@ -44,13 +25,19 @@ class _CreateBookState extends State<CreateBook> {
 
   Widget _category(List<Category> cates) {
     return DropdownButton<String>(
+      value: selectedName,
+      hint: Text("Select Category"),
       items: cates.map((item) {
-        return DropdownMenuItem<String>(
+        return DropdownMenuItem(
           value: item.id.toString(),
           child: Text(item.nameCategory),
         );
       }).toList(),
-      onChanged: (_) {},
+      onChanged: (value) {
+        setState(() {
+          selectedName = value!;
+        });
+      },
     );
   }
 
@@ -69,19 +56,27 @@ class _CreateBookState extends State<CreateBook> {
               MaterialPageRoute(builder: (context) => HomeScreen()),
             ),
           )),
-      body: Container(
-        margin: EdgeInsets.all(24),
-        child: FutureBuilder<List<Category>>(
-            future: futureCategories,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                List<Category>? categories = snapshot.data;
-                return _category(categories!);
-              } else {
-                return Center(child: CircularProgressIndicator());
-              }
-            }),
+      body: Column(
+        children:<Widget> [  
+          Container(
+            margin: EdgeInsets.all(24),
+            child: listFetchCategory(),
+          ),
+        ],
       ),
     );
+  }
+
+  FutureBuilder<List<Category>> listFetchCategory() {
+    return FutureBuilder<List<Category>>(
+        future: futureCategories,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<Category>? categories = snapshot.data;
+            return _category(categories!);
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        });
   }
 }
