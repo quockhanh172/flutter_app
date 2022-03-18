@@ -60,7 +60,7 @@ public class Ebook {
 		}
 	}
 	
-	@JsonProperty("idCategory")
+	@JsonProperty("categoryId")
 	public int getCategoryId() {
 		if(this.category.getNameCategory()!="") {
 			return this.category.getId();

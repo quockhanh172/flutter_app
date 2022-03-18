@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 class Book {
   Book({
     required this.id,
@@ -8,6 +9,7 @@ class Book {
     required this.author,
     required this.image,
     required this.categoryName,
+    required this.categoryId,
   });
 
   int id;
@@ -17,17 +19,18 @@ class Book {
   String author;
   String image;
   String categoryName;
+  int categoryId;
 
   factory Book.fromJson(Map<String, dynamic> json) {
     return Book(
-      id: json["id"],
-      title: json["title"],
-      description: json["description"],
-      date: json["date"],
-      author: json["author"],
-      image: json["image"],
-      categoryName: json["categoryName"],
-    );
+        id: json["id"],
+        title: json["title"],
+        description: json["description"],
+        date: json["date"],
+        author: json["author"],
+        image: json["image"],
+        categoryName: json["categoryName"],
+        categoryId: json["categoryId"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -39,12 +42,13 @@ class Book {
       "date": date,
       "image": image,
       "author": author,
+      "catgoryId": categoryId
     };
   }
 
-   @override
+  @override
   String toString() {
-    return 'Book{id: $id, title: $title, description: $description, date: $date, author: $author, image: $image, categoryName: $categoryName}';
+    return 'Book{id: $id, title: $title, description: $description, date: $date, author: $author, image: $image, categoryName: $categoryName, categoryId:$categoryId}';
   }
 }
 
