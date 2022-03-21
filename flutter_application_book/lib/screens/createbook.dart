@@ -1,10 +1,12 @@
 // ignore_for_file: camel_case_types, prefer_const_constructors, prefer_final_fields, unused_field, avoid_types_as_parameter_names, unused_element, unnecessary_new, deprecated_member_use
+import 'dart:io';
 
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_book/models/category.dart';
 import 'package:flutter_application_book/service/api.dart';
-
-import '../components/formCreateBook/formCreateBook.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'homescreen.dart';
 
 class CreateBook extends StatefulWidget {
@@ -20,20 +22,33 @@ class _CreateBookState extends State<CreateBook> {
   String? selectedName;
   final _formKey = GlobalKey<FormState>();
   DateTime? _dateTime;
+  final DateFormat _dateTimeFormat = DateFormat('dd/MM/yyyy');
+
+  File? _image;
+  final _picker = ImagePicker();
+  bool showspinner = false;
+
+  //controller editting text field
+  final TextEditingController titleInput = TextEditingController();
+  final TextEditingController dateInput = TextEditingController();
+  final TextEditingController descriptionInput = TextEditingController();
+  final TextEditingController authorInput = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     futureCategories = getCategories();
+    dateInput.text = "";
   }
 
   Widget _category(List<Category> cates) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: Colors.green.shade200,
+        color: Color.fromARGB(255, 26, 206, 32),
       ),
       padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-      margin: EdgeInsets.fromLTRB(100, 10, 0, 0),
+      margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
       child: DropdownButton<String>(
         borderRadius: BorderRadius.all(Radius.circular(20)),
         dropdownColor: Colors.green.shade50,
@@ -48,11 +63,11 @@ class _CreateBookState extends State<CreateBook> {
               value: item.id.toString(),
               child: Text(
                 item.nameCategory,
-                style: TextStyle(fontSize: 18),
+                style: TextStyle(fontSize: 20),
               ));
         }).toList(),
         icon: Icon(Icons.arrow_drop_down),
-        iconSize: 42,
+        iconSize: 30,
         underline: SizedBox(),
         onChanged: (value) {
           setState(() {
@@ -80,42 +95,195 @@ class _CreateBookState extends State<CreateBook> {
           alignment: Alignment.center,
           margin: EdgeInsets.all(20),
           child: Form(
-              key: _formKey,
-              child: Column(
-                children: <Widget>[
-                  textFormFieldTitle(),
-                  textFormFieldAuthor(),
-                  textFormFieldDescription(),
-                  TextFormField(
-                    decoration:
-                        InputDecoration.collapsed(hintText: 'Pick a date'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter Date of book';
-                      } else {
-                        return null;
-                      }
-                    },
-                  ),
-                  RaisedButton(
-                    child: Text("pick a date"),
-                    onPressed: () {
-                      showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(2022),
-                        lastDate: DateTime(2025),
-                      ).then((date) {
-                        setState(() {
-                          _dateTime = date;
-                        });
-                      });
-                    },
-                  ),
-                  listFetchCategory(),
-                ],
-              )),
+            key: _formKey,
+            child: Column(
+              children: <Widget>[
+                textFormFieldTitle(),
+                textFormFieldAuthor(),
+                textFormFieldDescription(),
+                textDisplayDatePicked(),
+                buttonDatePicker(context),
+                pickPictureFromGallery(),
+                listFetchCategory(),
+                ElevatedButton(
+                  onPressed: () {
+                    // Validate returns true if the form is valid, or false otherwise.
+                    if (_formKey.currentState!.validate()) {
+                      final String title = titleInput.text;
+                      final String author = authorInput.text;
+                      final String date = dateInput.text;
+                      final String description = descriptionInput.text;
+                      final String categoryId = selectedName!;
+                      // If the form is valid, display a snackbar. In the real world,
+                      // you'd often call a server or save the information in a database.
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Processing Data')),
+                      );
+                    }
+                  },
+                  child: const Text('Submit'),
+                ),
+              ],
+            ),
+          ),
         ),
+      ),
+    );
+  }
+
+  ModalProgressHUD pickPictureFromGallery() {
+    return ModalProgressHUD(
+      inAsyncCall: showspinner,
+      child: GestureDetector(
+        onTap: () {
+          getImage();
+        },
+        child: Container(
+          margin: EdgeInsets.fromLTRB(130, 10, 130, 0),
+          height: 100,
+          width: 100,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Color.fromARGB(255, 26, 206, 32),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: _image == null
+              ? Center(
+                  child: Text("pick a Image"),
+                )
+              : Container(
+                  child: Center(
+                      child: Image.file(
+                    File(_image!.path).absolute,
+                    height: 100,
+                    width: 100,
+                    fit: BoxFit.cover,
+                  )),
+                ),
+        ),
+      ),
+    );
+  }
+
+  Container textFormFieldTitle() {
+    return Container(
+      margin: EdgeInsets.fromLTRB(5, 10, 5, 0),
+      height: 45,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.green.shade200,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: TextFormField(
+        controller: titleInput,
+        decoration: InputDecoration.collapsed(hintText: 'Title of book'),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter Title of book';
+          } else {
+            return null;
+          }
+        },
+      ),
+    );
+  }
+
+  Container textFormFieldAuthor() {
+    return Container(
+      margin: EdgeInsets.fromLTRB(5, 10, 5, 0),
+      height: 45,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.green.shade200,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: TextFormField(
+        controller: authorInput,
+        decoration: new InputDecoration.collapsed(hintText: 'Author of book'),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter Title of book';
+          } else {
+            return null;
+          }
+        },
+      ),
+    );
+  }
+
+  Container textFormFieldDescription() {
+    return Container(
+      margin: EdgeInsets.fromLTRB(5, 10, 5, 0),
+      height: 150,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.green.shade200,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: TextFormField(
+        controller: descriptionInput,
+        minLines: 6,
+        keyboardType: TextInputType.multiline,
+        maxLines: null,
+        decoration:
+            new InputDecoration.collapsed(hintText: 'Description of book'),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter Title of book';
+          } else {
+            return null;
+          }
+        },
+      ),
+    );
+  }
+
+//putton pick a date
+  Container buttonDatePicker(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.fromLTRB(220, 0, 0, 0),
+      child: RaisedButton(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        color: Color.fromARGB(255, 26, 206, 32),
+        child: Text("pick a date"),
+        onPressed: () {
+          showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime(2010),
+            lastDate: DateTime(2025),
+          ).then((date) {
+            setState(() {
+              dateInput.text = _dateTimeFormat.format(date!);
+            });
+          });
+        },
+      ),
+    );
+  }
+
+// text display date picked
+  Container textDisplayDatePicked() {
+    return Container(
+      margin: EdgeInsets.fromLTRB(5, 10, 5, 0),
+      height: 45,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.green.shade200,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: TextFormField(
+        controller: dateInput,
+        readOnly: true,
+        decoration: InputDecoration.collapsed(
+            hintText: 'Choose date by button pick a date'),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter Date';
+          } else {
+            return null;
+          }
+        },
       ),
     );
   }
@@ -150,5 +318,24 @@ class _CreateBookState extends State<CreateBook> {
             return Center(child: CircularProgressIndicator());
           }
         });
+  }
+
+//get image from gallery
+  Future getImage() async {
+    final pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+
+    if (pickedFile != null) {
+      _image = File(pickedFile.path);
+      setState(() {});
+    } else {
+      print('no iamge selected');
+    }
+  }
+
+  Future<void> uploadImage() async {
+    setState(() {
+      showspinner = true;
+    });
   }
 }
