@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:intl/intl.dart';
+
 class Book {
   Book({
     required this.id,
@@ -26,7 +28,7 @@ class Book {
         id: json["id"],
         title: json["title"],
         description: json["description"],
-        date: json["date"],
+        date:DateTime.parse( json["date"]),
         author: json["author"],
         image: json["image"],
         categoryName: json["categoryName"],
@@ -52,7 +54,12 @@ class Book {
   }
 }
 
-List<Book> bookFromJson(String strJson) {
+Book bookFromJson(String strJson) {
+  final str = json.decode(strJson);
+  return Book.fromJson(str);
+}
+
+List<Book> booksFromJson(String strJson) {
   final str = json.decode(strJson);
   return List<Book>.from(str.map((item) {
     return Book.fromJson(item);

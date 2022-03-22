@@ -1,6 +1,7 @@
 // ignore_for_file: camel_case_types, prefer_const_constructors, prefer_final_fields, unused_field, avoid_types_as_parameter_names, unused_element, unnecessary_new, deprecated_member_use
 import 'dart:io';
 
+import 'package:flutter_application_book/models/book.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,8 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'homescreen.dart';
 
 class CreateBook extends StatefulWidget {
-  const CreateBook({Key? key}) : super(key: key);
+  final Book?book ;
+  const CreateBook({Key? key, this.book}) : super(key: key);
   static GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
@@ -22,7 +24,7 @@ class _CreateBookState extends State<CreateBook> {
   String? selectedName;
   final _formKey = GlobalKey<FormState>();
   DateTime? _dateTime;
-  final DateFormat _dateTimeFormat = DateFormat('dd/MM/yyyy');
+  final DateFormat _dateTimeFormat = DateFormat('dd-MM-yyyy');
 
   File? _image;
   final _picker = ImagePicker();
@@ -33,19 +35,22 @@ class _CreateBookState extends State<CreateBook> {
   final TextEditingController dateInput = TextEditingController();
   final TextEditingController descriptionInput = TextEditingController();
   final TextEditingController authorInput = TextEditingController();
+   Book?b;
 
   @override
   void initState() {
     super.initState();
     futureCategories = getCategories();
     dateInput.text = "";
+    if(widget.book!=null){
+    b= widget.book;
+    }  
   }
-
   Widget _category(List<Category> cates) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: Color.fromARGB(255, 26, 206, 32),
+        color: Colors.grey.shade400,
       ),
       padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
       margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
@@ -109,16 +114,21 @@ class _CreateBookState extends State<CreateBook> {
                   onPressed: () {
                     // Validate returns true if the form is valid, or false otherwise.
                     if (_formKey.currentState!.validate()) {
-                      final String title = titleInput.text;
-                      final String author = authorInput.text;
-                      final String date = dateInput.text;
-                      final String description = descriptionInput.text;
-                      final String categoryId = selectedName!;
-                      // If the form is valid, display a snackbar. In the real world,
-                      // you'd often call a server or save the information in a database.
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Processing Data')),
-                      );
+                      Map<String, String> data = {
+                        'title': titleInput.text,
+                        'author': authorInput.text,
+                        'date': dateInput.text,
+                        'description': descriptionInput.text,
+                        'categoryId': selectedName.toString(),
+                      };
+                      print(titleInput.text);
+                      upload(_image!, data) == null
+                          ? ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('failled')),
+                            )
+                          : ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('successfull')),
+                            );
                     }
                   },
                   child: const Text('Submit'),
@@ -144,9 +154,9 @@ class _CreateBookState extends State<CreateBook> {
           width: 100,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Color.fromARGB(255, 26, 206, 32),
-            borderRadius: BorderRadius.circular(5),
-          ),
+              color: Colors.grey.shade400,
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(style: BorderStyle.solid)),
           child: _image == null
               ? Center(
                   child: Text("pick a Image"),
@@ -171,8 +181,10 @@ class _CreateBookState extends State<CreateBook> {
       height: 45,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.green.shade200,
-        borderRadius: BorderRadius.circular(5),
+        border: Border(
+            bottom: BorderSide(
+          color: Colors.black,
+        )),
       ),
       child: TextFormField(
         controller: titleInput,
@@ -194,8 +206,10 @@ class _CreateBookState extends State<CreateBook> {
       height: 45,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.green.shade200,
-        borderRadius: BorderRadius.circular(5),
+        border: Border(
+            bottom: BorderSide(
+          color: Colors.black,
+        )),
       ),
       child: TextFormField(
         controller: authorInput,
@@ -217,8 +231,10 @@ class _CreateBookState extends State<CreateBook> {
       height: 150,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.green.shade200,
-        borderRadius: BorderRadius.circular(5),
+        border: Border(
+            bottom: BorderSide(
+          color: Colors.black,
+        )),
       ),
       child: TextFormField(
         controller: descriptionInput,
@@ -242,9 +258,13 @@ class _CreateBookState extends State<CreateBook> {
   Container buttonDatePicker(BuildContext context) {
     return Container(
       margin: EdgeInsets.fromLTRB(220, 0, 0, 0),
+      decoration: BoxDecoration(boxShadow: [
+        BoxShadow(
+            blurRadius: 10, color: Colors.grey.shade500, offset: Offset(4, 8))
+      ]),
       child: RaisedButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        color: Color.fromARGB(255, 26, 206, 32),
+        color: Colors.grey.shade400,
         child: Text("pick a date"),
         onPressed: () {
           showDatePicker(
@@ -269,8 +289,10 @@ class _CreateBookState extends State<CreateBook> {
       height: 45,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.green.shade200,
-        borderRadius: BorderRadius.circular(5),
+        border: Border(
+            bottom: BorderSide(
+          color: Colors.black,
+        )),
       ),
       child: TextFormField(
         controller: dateInput,
@@ -329,13 +351,7 @@ class _CreateBookState extends State<CreateBook> {
       _image = File(pickedFile.path);
       setState(() {});
     } else {
-      print('no iamge selected');
+      print('no image selected');
     }
-  }
-
-  Future<void> uploadImage() async {
-    setState(() {
-      showspinner = true;
-    });
   }
 }
