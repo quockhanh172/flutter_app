@@ -171,7 +171,7 @@ class _EditBookState extends State<EditBook> {
                       }
                     }
                   },
-                  child: const Text('Submit'),
+                  child: const Text('Update'),
                 ),
               ],
             ),
