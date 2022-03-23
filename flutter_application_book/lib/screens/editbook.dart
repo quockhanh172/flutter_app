@@ -1,23 +1,26 @@
-// ignore_for_file: camel_case_types, prefer_const_constructors, prefer_final_fields, unused_field, avoid_types_as_parameter_names, unused_element, unnecessary_new, deprecated_member_use, unnecessary_null_comparison
+// ignore_for_file: prefer_const_constructors, unnecessary_null_comparison, deprecated_member_use, unnecessary_new
+
 import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_application_book/models/book.dart';
+import 'package:flutter_application_book/screens/listbook.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_application_book/models/category.dart';
-import 'package:flutter_application_book/service/api.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'homescreen.dart';
 
-class CreateBook extends StatefulWidget {
-  const CreateBook({Key? key,}) : super(key: key);
-  static GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+import '../models/category.dart';
+import '../service/api.dart';
+
+class EditBook extends StatefulWidget {
+  final Book? book;
+  const EditBook({Key? key, this.book}) : super(key: key);
 
   @override
-  State<CreateBook> createState() => _CreateBookState();
+  State<EditBook> createState() => _EditBookState();
 }
 
-class _CreateBookState extends State<CreateBook> {
+class _EditBookState extends State<EditBook> {
   Future<List<Category>>? futureCategories;
   String? selectedName;
   final _formKey = GlobalKey<FormState>();
@@ -28,18 +31,26 @@ class _CreateBookState extends State<CreateBook> {
   final _picker = ImagePicker();
   bool showspinner = false;
 
-  //controller editting text field
   final TextEditingController titleInput = TextEditingController();
   final TextEditingController dateInput = TextEditingController();
   final TextEditingController descriptionInput = TextEditingController();
   final TextEditingController authorInput = TextEditingController();
-
+  final TextEditingController oldCategoryInput = TextEditingController();
   @override
   void initState() {
     super.initState();
     futureCategories = getCategories();
     dateInput.text = "";
+    titleInput.text = widget.book!.title;
+    dateInput.text = _dateTimeFormat.format(widget.book!.date);
+    descriptionInput.text = widget.book!.description;
+    authorInput.text = widget.book!.author;
+    oldCategoryInput.text = widget.book!.categoryName;
+    if (selectedName == ""|| selectedName ==null) {
+      selectedName = widget.book!.categoryId.toString();
+    }
   }
+
   Widget _category(List<Category> cates) {
     return Container(
       decoration: BoxDecoration(
@@ -102,31 +113,62 @@ class _CreateBookState extends State<CreateBook> {
                 textFormFieldDescription(),
                 textDisplayDatePicked(),
                 buttonDatePicker(context),
+                displayOldPicture(),
                 pickPictureFromGallery(),
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                  child: Column(
+                    children: [
+                      Text(
+                        "Old Category",
+                        textAlign: TextAlign.center,
+                      ),
+                      Container(
+                        margin: EdgeInsets.fromLTRB(59, 10, 50, 0),
+                        height: 20,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(
+                            color: Colors.black,
+                          )),
+                        ),
+                        child: TextFormField(
+                          controller: oldCategoryInput,
+                          readOnly: true,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 listFetchCategory(),
                 ElevatedButton(
                   onPressed: () {
                     // Validate returns true if the form is valid, or false otherwise.
-                    if (_formKey.currentState!.validate()&& _image!=null && selectedName!=null) {
+                    if (_formKey.currentState!.validate()) {
                       Map<String, String> data = {
+                        'id': widget.book!.id.toString(),
                         'title': titleInput.text,
                         'author': authorInput.text,
                         'date': dateInput.text,
                         'description': descriptionInput.text,
-                        'categoryId': selectedName.toString(),
+                        'categoryId': selectedName!,
                       };
-                      upload(_image!, data) == null
-                          ? ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('failled')),
-                            )
-                          : ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('successfull')),
-                            );
-                    }
-                    else{
-                       ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please choose image of book and category')),
-                    );
+                      if (_image == null) {
+                        updateBookWithoutFile(data);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('successfull')),
+                        );
+                      } else {
+                        updateBook(_image!, data) == null
+                            ? ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('failled')),
+                              )
+                            : ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('successfull')),
+                              );
+                      }
                     }
                   },
                   child: const Text('Submit'),
@@ -136,6 +178,23 @@ class _CreateBookState extends State<CreateBook> {
           ),
         ),
       ),
+    );
+  }
+
+  Column displayOldPicture() {
+    return Column(
+      children: [
+        Center(
+          child: ListTile(
+              title: Text(
+            "Old picture",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          )),
+        ),
+        Image.network("http://10.0.2.2:8080/ebook/${widget.book!.image}",
+            height: 100, width: 100, fit: BoxFit.cover),
+      ],
     );
   }
 
@@ -159,15 +218,13 @@ class _CreateBookState extends State<CreateBook> {
               ? Center(
                   child: Text("pick a Image"),
                 )
-              : Container(
-                  child: Center(
-                      child: Image.file(
-                    File(_image!.path).absolute,
-                    height: 100,
-                    width: 100,
-                    fit: BoxFit.cover,
-                  )),
-                ),
+              : Center(
+                  child: Image.file(
+                  File(_image!.path).absolute,
+                  height: 100,
+                  width: 100,
+                  fit: BoxFit.cover,
+                )),
         ),
       ),
     );
@@ -315,13 +372,13 @@ class _CreateBookState extends State<CreateBook> {
     return AppBar(
         backgroundColor: Color.fromARGB(255, 81, 228, 93),
         centerTitle: true,
-        title: Text("Create Book"),
+        title: Text("Update Book"),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => HomeScreen()),
+            MaterialPageRoute(builder: (context) => ListBook()),
           ),
         ));
   }
@@ -344,7 +401,7 @@ class _CreateBookState extends State<CreateBook> {
   Future getImage() async {
     final pickedFile =
         await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-    
+
     if (pickedFile != null) {
       _image = File(pickedFile.path);
       setState(() {});

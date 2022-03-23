@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_new, deprecated_member_use
+// ignore_for_file: unnecessary_new, deprecated_member_use, non_constant_identifier_names, unused_element
 
 import 'dart:io';
 import 'package:async/async.dart';
@@ -9,25 +9,25 @@ import 'package:http/http.dart' as http;
 
 String baseUrl = "http://localhost:8080";
 String postUrl = "http://10.0.2.2:8080/ebook/add";
+String EditUrl = "http://10.0.2.2:8080/ebook/edit";
 Future<List<Category>> getCategories() async {
   var response =
       await http.get(Uri.parse("http://10.0.2.2:8080/category/list"));
   return categoryFromJson(response.body);
 }
 
-Future <List<Book>> getBooks() async{
-  var response = 
-      await http.get(Uri.parse("http://10.0.2.2:8080/ebook/list"));
+Future<List<Book>> getBooks() async {
+  var response = await http.get(Uri.parse("http://10.0.2.2:8080/ebook/list"));
   return booksFromJson(response.body);
 }
 
-Future<bool> deleteBook(int id) async{
-  var request = new http.Request('DELETE', Uri.parse("http://10.0.2.2:8080/ebook/delete/${id}"));
+Future<bool> deleteBook(int id) async {
+  var request = new http.Request(
+      'DELETE', Uri.parse("http://10.0.2.2:8080/ebook/delete/${id}"));
   var response = await request.send();
-  if(response.statusCode==200){
+  if (response.statusCode == 200) {
     return true;
-  }
-  else{
+  } else {
     return false;
   }
 }
@@ -49,8 +49,9 @@ Future<Book> upload(File imageFile, Map<String, String> body) async {
   var request = new http.MultipartRequest('POST', uri)
     ..fields.addAll(body)
     ..headers.addAll(headers)
-    ..files.add(await http.MultipartFile('image', stream, length,filename: basename(imageFile.path)));
-  // multipart 
+    ..files.add(await http.MultipartFile('image', stream, length,
+        filename: basename(imageFile.path)));
+  // multipart
 
   // add file to multipart
   var response = await request.send();
@@ -58,6 +59,48 @@ Future<Book> upload(File imageFile, Map<String, String> body) async {
   if (response.statusCode == 201) {
     return bookFromJson(respStr);
   } else {
-    return  bookFromJson(respStr);
+    return bookFromJson(respStr);
+  }
+}
+
+Future<Book> updateBookWithoutFile(Map<String, String> body) async {
+  var response = await http.put(
+    Uri.parse(EditUrl),
+    body: body,
+    // headers: <String, String>{
+    //   'Content-Type': 'application/json; charset=UTF-8',
+    // },
+  );
+  return bookFromJson(response.body);
+}
+
+Future<Book> updateBook(File imageFile, Map<String, String> body) async {
+  // open a bytestream
+  var stream =
+      new http.ByteStream(DelegatingStream.typed(imageFile.openRead()));
+  Map<String, String> headers = {
+    'Content-Type': 'multipart/form-data',
+  };
+  // get file length
+  var length = await imageFile.length();
+
+  // string to uri
+  var uri = Uri.parse(EditUrl);
+
+  // create multipart request
+  var request = new http.MultipartRequest('PUT', uri)
+    ..fields.addAll(body)
+    ..headers.addAll(headers)
+    ..files.add(await http.MultipartFile('image', stream, length,
+        filename: basename(imageFile.path)));
+  // multipart
+
+  // add file to multipart
+  var response = await request.send();
+  final respStr = await response.stream.bytesToString();
+  if (response.statusCode == 201) {
+    return bookFromJson(respStr);
+  } else {
+    return bookFromJson(respStr);
   }
 }

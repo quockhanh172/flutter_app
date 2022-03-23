@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_book/models/book.dart';
+import 'package:flutter_application_book/screens/homescreen.dart';
 import 'package:flutter_application_book/screens/listbook.dart';
 import 'package:intl/intl.dart';
 
@@ -27,7 +28,7 @@ class _DetailBookState extends State<DetailBook> {
             color: Colors.white,
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ListBook()),
+              MaterialPageRoute(builder: (context) => HomeScreen()),
             ),
           )),
       body: Card(
@@ -94,7 +95,7 @@ class _DetailBookState extends State<DetailBook> {
                   Container(
                     padding: const EdgeInsets.all(1.0),
                     width:MediaQuery.of(context).size.width*1,
-                    child: Text("${widget.book!.description}")),
+                    child: Text(widget.book!.description)),
                 ],
               ),
             ],

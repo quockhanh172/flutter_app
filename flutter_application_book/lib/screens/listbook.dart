@@ -1,9 +1,9 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_book/models/book.dart';
-import 'package:flutter_application_book/screens/createbook.dart';
 import 'package:flutter_application_book/screens/detailbook.dart';
+import 'package:flutter_application_book/screens/editbook.dart';
 import 'package:flutter_application_book/screens/homescreen.dart';
 import 'package:flutter_application_book/service/api.dart';
 
@@ -30,7 +30,7 @@ class _ListBookState extends State<ListBook> {
       appBar: AppBar(
           backgroundColor: Color.fromARGB(255, 81, 228, 93),
           centerTitle: true,
-          title: Text("List book"),
+          title: Text("Edit book"),
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
             color: Colors.white,
@@ -82,11 +82,13 @@ class _ListBookState extends State<ListBook> {
                                 color: Colors.yellow,
                                 onPressed: () {
                                   Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => CreateBook(
-                                                book: books[index],
-                                              )));
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditBook(
+                                          book: books[index],
+                                        ),
+                                      ),
+                                  );
                                 },
                               ),
                               RaisedButton(
@@ -126,7 +128,7 @@ showAlertDialog(BuildContext context, Book book) {
     },
   );
   Widget continueButton = TextButton(
-    child: Text("Ok"),
+    child: Text("yes"),
     onPressed: () {
       deleteBook(book.id).then((value) => Navigator.push(
             context,
@@ -138,7 +140,7 @@ showAlertDialog(BuildContext context, Book book) {
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
     title: Text("AlertDialog"),
-    content: Text("Are u sure delete book ${book.title} ?"),
+    content: Text("Are you sure delete book ${book.title} ?"),
     actions: [
       cancelButton,
       continueButton,

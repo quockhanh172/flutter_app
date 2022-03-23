@@ -20,7 +20,7 @@ class NavigationDrawerWidget extends StatelessWidget {
               height: 48,
             ),
             listTitleComponent(
-                text: "List Book",
+                text: "Edit Book",
                 icon: Icons.book,
                 context: context,
                 a: ListBook()),

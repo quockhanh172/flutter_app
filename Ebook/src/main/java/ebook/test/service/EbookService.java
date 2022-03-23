@@ -62,6 +62,24 @@ public class EbookService {
 		return ebook;
 	}
 	
+	public Ebook updateEbook(DataResponse dataResponse,MultipartFile image)throws IOException, ParseException {
+		Ebook newEbook = ebookRepository.findById(dataResponse.id);
+		newEbook.setTitle(dataResponse.getTitle());
+		newEbook.setAuthor(dataResponse.getAuthor());
+		newEbook.setCategory(categoryRepository.findById(dataResponse.getCategoryId()));
+		newEbook.setDescription(dataResponse.getDescription());
+		DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+		newEbook.setDate(df.parse(dataResponse.date));
+		if(image!=null) {
+			if (image.getOriginalFilename() != null) {
+				
+				newEbook.setImage("image/"+dataResponse.getTitle()+"."+"jpg");
+				savefile(image,dataResponse);
+			}
+		}
+		Ebook ebook = ebookRepository.save(newEbook);
+		return ebook;
+	}
 	
 	
 	public void savefile(MultipartFile file,DataResponse data) throws IOException {
